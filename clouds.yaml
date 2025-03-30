@@ -1,0 +1,13 @@
+clouds:
+  myopenstack:
+    auth:
+      auth_url: http://10.0.10.254:5000/v3
+      username: "admin"
+      password: "LBxY57JbT8jm6NKdbF93sRvPBCMUqZksQi920G5l"
+      project_name: "admin"
+      user_domain_name: "Default"
+      project_domain_name: "Default"
+    region_name: "RegionOne"
+    interface: "public"
+    identity_api_version: 3
+

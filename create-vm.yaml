@@ -1,0 +1,52 @@
+---
+- name: Create instances on OpenStack by AWX
+  hosts: localhost
+  tasks:
+    - name: Create security group HTTP
+      openstack.cloud.security_group:
+        cloud: myopenstack
+        state: present
+        name: http-allow
+        description: "Allow HTTP access"
+
+    - name: Add rule HTTP
+      openstack.cloud.security_group_rule:
+        cloud: myopenstack
+        security_group: http-allow
+        protocol: tcp
+        port_range_min: 80
+        port_range_max: 80
+        remote_ip_prefix: 0.0.0.0/0
+
+    - name: Create instances
+      openstack.cloud.server:
+        cloud: myopenstack
+        state: present
+        name: my-awx-vm
+        image: "64e21e76-83b9-4534-b06d-e7bfd80524fb"
+        key_name: my-key
+        flavor: "3a5e5fda-b9ec-414c-b771-309067ac7b6c"
+        network: "0d258f1a-dfd0-408c-ba5d-92909318e178" 
+        security_groups:
+          - http-allow
+          - default
+        boot_from_volume: yes
+        volume_size: 10
+      register: vm_info
+
+    - name: Create Floating IP 
+      openstack.cloud.floating_ip:
+        cloud: myopenstack
+        network: "external-net"
+      register: new_floating_ip
+
+    - name: Assign Floating IP to VM
+      openstack.cloud.floating_ip:
+        cloud: myopenstack
+        server: "{{ vm_info.server.id }}"
+        floating_ip_address: "{{ new_floating_ip.floating_ip.floating_ip_address }}"
+
+    - name: Show Floating IP
+      debug:
+        msg: "Floating IP: {{ new_floating_ip.floating_ip.floating_ip_address }}"
+
